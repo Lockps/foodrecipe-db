@@ -4,8 +4,10 @@ import Parameter
 
 
 def main():
-    test = Parameter.Parameter()
-    print(test.website)
+    env = Parameter.Parameter()
+    website = env.website
+
+    print(website)
 
 
 if __name__ == "__main__":
