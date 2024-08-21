@@ -20,12 +20,12 @@ def main():
     strsoup = str(soup)
     # print(type(str(soup)))
 
-    # print(soup)
+    print(soup)
 
-    file_path = "./test.html"
+    # file_path = "./sample/test.html"
 
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(strsoup)
+    # with open(file_path, 'w', encoding='utf-8') as file:
+    #     file.write(strsoup)
 
 
 if __name__ == "__main__":
