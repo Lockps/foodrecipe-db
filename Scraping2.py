@@ -5,27 +5,31 @@ from selenium.webdriver.common.by import By
 import random
 import time
 from faker import Faker
-
 from Parameter import Parameter as env
 
 fake = Faker()
 
 
 def get_elements(driver, prefix):
-    print("get element")
+    print("Getting elements with prefix:", prefix)
     li_elements = driver.find_elements(By.TAG_NAME, "li")
 
     matching = [li for li in li_elements if li.get_attribute(
         'id').startswith(prefix)]
 
-    print(matching)
+    for element in matching:
+        element_id = element.get_attribute('id')
+        element_text = element.text
+        print(f"Element ID: {element_id}, Text: {element_text}")
+
+        with open("./db/test.txt", "w") as file:
+            element_id + ":" + element_text
 
 
-def generate_random_history_and_cookies(driver, domain, num_visits=3):
+def generate_random_history_and_cookies(driver, num_visits=6):
     urls = [
         "https://www.google.com/search?q=" + fake.word(),
         "https://www.facebook.com/asdasswasc/",
-        "https://www.tweethunter.io",
         "https://www.chatgpt.com/",
         "https://ntom-api.intense.co.th/",
         "https://javiercbk.github.io/json_to_dart",
@@ -36,40 +40,28 @@ def generate_random_history_and_cookies(driver, domain, num_visits=3):
     for _ in range(num_visits):
         url = random.choice(urls)
         driver.get(url)
-        time.sleep(random.uniform(2, 5))  # Simulate user delay
-
-        # # Generate a random cookie
-        # cookie = {
-        #     'name': fake.word(),
-        #     'value': fake.word(),
-        #     'domain': domain,
-        #     'path': '/',
-        #     # Expiry time (1 hour to 1 day)
-        #     'expiry': int(time.time()) + random.randint(3600, 86400)
-        # }
-        # driver.add_cookie(cookie)
-
-    cookies = driver.get_cookies()
-    print("Generated cookies:")
-    for cookie in cookies:
-        print(cookie)
+        time.sleep(random.uniform(2, 5))
 
 
 def main():
     options = Options()
-    options.add_argument("--headless")
+    # options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
 
     service = Service(executable_path="./chromedriver/chromedriver.exe")
-    driver = webdriver.Chrome(service=service)
+    driver = webdriver.Chrome(service=service, options=options)
 
     try:
-        generate_random_history_and_cookies(driver, domain=env.website)
+        for i in range(1, 12):
+            print(i)
+            generate_random_history_and_cookies(driver)
+            driver.get(env.website+str(i))
+            get_elements(driver, "recipe")
+            print("Element retrieval successful.")
+            time.sleep(2)
 
-        driver.get(env.website)
-
-        get_elements(driver, "recipe")
-
-        time.sleep(2000)
+    except Exception as e:
+        print("An error occurred:", str(e))
 
     finally:
         driver.quit()
