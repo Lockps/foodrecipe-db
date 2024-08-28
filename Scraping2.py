@@ -22,15 +22,29 @@ def get_elements(driver, prefix):
         element_text = element.text
         print(f"Element ID: {element_id}, Text: {element_text}")
 
-        with open("./db/test.txt", "w") as file:
-            element_id + ":" + element_text
+        # Open the file in append mode with UTF-8 encoding
+        with open("./db/test.txt", "a", encoding="utf-8") as file:
+            file.write(f"{element_id}: {element_text}\n")
+            print("Element retrieval successful.")
+
+
+def check_for_block_message(driver):
+    try:
+        block_message = "ระบบพบว่าคุณใช้โปรแกรมอัตโนมัติในการเข้าใช้งานเว็บไซต์ของเรา"
+        if block_message in driver.page_source:
+            print("Detected block message on the page. Retrying...")
+            return True
+        return False
+    except Exception as e:
+        print("An error occurred while checking for the block message:", str(e))
+        return False
 
 
 def generate_random_history_and_cookies(driver, num_visits=6):
     urls = [
         "https://www.google.com/search?q=" + fake.word(),
-        "https://www.facebook.com/asdasswasc/",
-        "https://www.chatgpt.com/",
+        "https://www.facebook.com/" + fake.word(),
+        "https://www.chatgpt.com/c/"+fake.word(),
         "https://ntom-api.intense.co.th/",
         "https://javiercbk.github.io/json_to_dart",
         "https://steamdb.info/",
@@ -40,7 +54,12 @@ def generate_random_history_and_cookies(driver, num_visits=6):
     for _ in range(num_visits):
         url = random.choice(urls)
         driver.get(url)
-        time.sleep(random.uniform(2, 5))
+        time.sleep(random.uniform(20, 55))
+
+    driver.get("https://www.touchvpn.net/")
+    connect_btn = driver.find_element(By.ID, "connect-btn")
+    connect_btn.click()
+    time.sleep(10)
 
 
 def main():
@@ -52,12 +71,16 @@ def main():
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
-        for i in range(1, 12):
-            print(i)
+        for i in range(2, 12):
+            print(f"Visiting page {i}...")
             generate_random_history_and_cookies(driver)
-            driver.get(env.website+str(i))
+            driver.get(env.website + str(i))
+
+            if check_for_block_message(driver):
+                time.sleep(5)  # Wait before retrying
+                driver.get(env.website + str(i))
+
             get_elements(driver, "recipe")
-            print("Element retrieval successful.")
             time.sleep(2)
 
     except Exception as e:
